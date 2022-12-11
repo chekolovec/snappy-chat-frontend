@@ -2,13 +2,13 @@ import "react-toastify/dist/ReactToastify.css";
 
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useCookies } from "react-cookie";
 import { Link, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import styled from "styled-components";
 
 import Logo from "../assets/logo.svg";
 import { registerRoute } from "../utils/APIRoutes";
+import { getJWT, saveJWT } from "../utils/localStorage";
 import { toastOptions } from "../utils/toastOptions";
 
 const FormContainer = styled.div`
@@ -82,7 +82,6 @@ const FormContainer = styled.div`
 
 export const Register = () => {
   const navigate = useNavigate();
-  const [cookies] = useCookies();
   const [values, setValues] = useState({
     username: "",
     email: "",
@@ -108,6 +107,7 @@ export const Register = () => {
         toast.error(data.msg, toastOptions);
       }
       if (data.status === true) {
+        saveJWT(data.token);
         navigate("/");
       }
     }
@@ -134,7 +134,7 @@ export const Register = () => {
   };
 
   useEffect(() => {
-    if (cookies?.jwt) {
+    if (getJWT()) {
       navigate("/");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

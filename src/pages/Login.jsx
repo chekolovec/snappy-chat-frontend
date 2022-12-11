@@ -2,13 +2,13 @@ import "react-toastify/dist/ReactToastify.css";
 
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useCookies } from "react-cookie";
 import { Link, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import styled from "styled-components";
 
 import Logo from "../assets/logo.svg";
 import { loginRoute } from "../utils/APIRoutes";
+import { getJWT, saveJWT } from "../utils/localStorage";
 import { toastOptions } from "../utils/toastOptions";
 
 const FormContainer = styled.div`
@@ -86,7 +86,6 @@ export const Login = () => {
     username: "",
     password: "",
   });
-  const [cookies] = useCookies();
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (handleValidation()) {
@@ -105,6 +104,7 @@ export const Login = () => {
         toast.error(data.msg, toastOptions);
       }
       if (data.status === true) {
+        saveJWT(data.token);
         navigate("/");
       }
     }
@@ -124,10 +124,10 @@ export const Login = () => {
   };
 
   useEffect(() => {
-    if (cookies?.jwt) {
+    if (getJWT()) {
       navigate("/");
     }
-  }, [cookies, navigate]);
+  }, [navigate]);
 
   const handleChange = (event) => {
     setValues({ ...values, [event.target.name]: event.target.value });

@@ -1,6 +1,5 @@
 import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
-import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import styled from "styled-components";
@@ -9,6 +8,7 @@ import { ChatContainer } from "../components/ChatContainer";
 import { Contacts } from "../components/Contacts";
 import { Welcome } from "../components/Welcome";
 import { allUsersRoute, host, verifyUserRoute } from "../utils/APIRoutes";
+import { getJWT, removeJWT } from "../utils/localStorage";
 
 const Container = styled.div`
   height: 100vh;
@@ -38,7 +38,6 @@ export const Chat = () => {
   const [currentUser, setCurrentUser] = useState(undefined);
   const [currentChat, setCurrentChat] = useState(undefined);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [cookies, , removeCookies] = useCookies();
 
   useEffect(() => {
     if (currentUser) {
@@ -63,24 +62,15 @@ export const Chat = () => {
   }, [currentUser]);
 
   useEffect(() => {
-    const fetchContacts = async () => {};
-    fetchContacts();
-  }, []);
-
-  useEffect(() => {
     const verifyUser = async () => {
-      if (!cookies.jwt) {
+      if (!getJWT()) {
         navigate("/login");
         return;
       }
-      const { data } = await axios.post(
-        verifyUserRoute,
-        {},
-        { withCredentials: true }
-      );
+      const { data } = await axios.post(verifyUserRoute, { token: getJWT() });
 
       if (!data?.status) {
-        removeCookies("jwt");
+        removeJWT();
         navigate("/login");
         return;
       }
@@ -88,7 +78,7 @@ export const Chat = () => {
       setIsLoaded(true);
     };
     verifyUser();
-  }, [cookies, navigate, removeCookies]);
+  }, [navigate]);
 
   const handleChatChange = (chat) => {
     setCurrentChat(chat);
